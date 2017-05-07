@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Timer</title>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.2/vue.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js'></script>
+<style>
+    body {
+        color: #CCC;
+        background-color: black;
+        font-family: Arial, Helvetica, sans-serif;
+        height: 100%;
+        vertical-align: middle;
+        padding: 20px;
+    }
+    .clock {
+        font-size: 8em;
+        text-align: center;
+    }
+
+    .clock span {
+        font-size: 0.8em;
+    }
+    .timer {
+        text-align: center;
+        font-size: 5em;
+    }
+    .timer label {
+        color: #333;
+        display: block;
+        font-size: 0.6em;
+        margin-top: 15px;
+    }
+    .timer span {
+        font-size: 0.2em;
+        cursor: pointer;
+        color: #333;
+    }
+    input {
+        font-size: 1em;
+        width: 200px;
+    }
+</style>
+<title>Timer</title>
+</head>
+<body>
+<div id='app'>
+  <clock :time='time'></clock>
+  <timer :msecs='timer.msecs' :running='timer.running'></timer>
+</div>
+<script>
+    Vue.component('clock', {
+        template: '<div class="clock">{{hourMinute}} <span>{{meridian}}</span></div>',
+        props: ['time'],
+        computed: {
+            hourMinute: function () {
+                return moment(this.time).format("h:mm");
+            },
+            meridian: function () {
+                return moment(this.time).format('A');
+            }
+        }
+    });
+
+    Vue.component('timer', {
+        template: `
+        <div class="timer">
+            <template v-if="defaultMode">
+                <div><label>Time left:</label>{{display}} minutes</div>
+                <span v-on:click="reset">reset</span><span> / </span>
+                <span v-on:click="pauseStart">{{ running ? 'pause' : 'resume' }}</span>
+                <span v-on:click="switchToEditMode"> edit</span>
+            </template>
+            <template v-else-if="editMode">
+                <label>Enter minutes: </label>
+                <input v-model='newMinutes'> </input>
+                <button @click='setNewTime'>Save</button>
+            <template v-else-if="editMode">
+        </div>`,
+        props: ['msecs', 'running'], // in seconds
+        data: function () {
+            return {
+                mode: 'default',
+                newMinutes: null
+            };
+        },
+        computed: {
+            display: function () {
+                return Math.round(this.msecs/1000/60);
+            },
+            defaultMode: function() {
+                console.log('checking default', this.mode, this.mode === 'default');
+                return this.mode  === 'default';
+            },
+            editMode: function () {
+                return this.mode == 'edit';
+            }
+        },
+        methods: {
+            reset: function () {
+                resetTimer();
+            },
+            pauseStart: function () {
+                pauseStartTimer();
+            },
+            switchToEditMode: function () {
+                this.mode = 'edit';
+            },
+            setNewTime: function () {
+                DATA.timer.initial = this.newMinutes* 60 * 1000;
+                this.reset();
+                this.mode = 'default';
+            }
+        }
+    });
+
+    var DATA = {
+        time: new Date(),
+        timer: {
+            msecs: 1000 * 60 * 60,
+            lastUpdate: null,
+            running: true,
+            initial: 1000 * 60 * 60
+        }
+    };
+
+    var app = new Vue({
+        el: '#app',
+        data: DATA,
+        methods: {
+            updateTime: function () {
+                this.time = new Date();
+                if (!this.timer.lastUpdate) { this.timer.lastUpdate = this.time; }
+                if (this.timer.running) {
+                    var delta = this.time - this.timer.lastUpdate;
+                    this.timer.msecs = Math.max(this.timer.msecs - delta, 0);
+                }
+                this.timer.lastUpdate = this.time;
+            }
+        },
+        mounted: function () {
+            this.interval = setInterval(this.updateTime, 1000);
+        },
+        beforeDestroy: function (){
+            clearInterval(this.interval);
+        }
+    });
+
+    function resetTimer() {
+        DATA.timer = {
+            msecs: DATA.timer.initial,
+            lastUpdate: null,
+            running: true,
+            initial: DATA.timer.initial
+        };
+    }
+
+    function pauseStartTimer() {
+        DATA.timer.running = !DATA.timer.running;
+    }
+</script>
+</body>
+</html>
