@@ -14,7 +14,7 @@
         padding: 20px;
     }
     .clock {
-        font-size: 8em;
+        font-size: 5em;
         text-align: center;
     }
 
@@ -23,31 +23,37 @@
     }
     .timer {
         text-align: center;
-        font-size: 5em;
     }
     .timer label {
         color: #333;
         display: block;
-        font-size: 0.6em;
         margin-top: 15px;
+        font-size: 5em;
     }
-    .timer span {
-        font-size: 0.2em;
+    .timer .time-left {
+        font-size: 8em;
+    }
+    .timer .controls span {
         cursor: pointer;
         color: #333;
+        font-size: 2em;
     }
     input {
-        font-size: 1em;
+        font-size: 8em;
         width: 200px;
+    }
+    .over-time {
+        color: #FF5733
     }
 </style>
 <title>Timer</title>
 </head>
 <body>
 <div id='app'>
-  <clock :time='time'></clock>
   <timer :msecs='timer.msecs' :running='timer.running'></timer>
+  <clock :time='time'></clock>
 </div>
+
 <script>
     Vue.component('clock', {
         template: '<div class="clock">{{hourMinute}} <span>{{meridian}}</span></div>',
@@ -66,10 +72,16 @@
         template: `
         <div class="timer">
             <template v-if="defaultMode">
-                <div><label>Time left:</label>{{display}} minutes</div>
-                <span v-on:click="reset">reset</span><span> / </span>
-                <span v-on:click="pauseStart">{{ running ? 'pause' : 'resume' }}</span>
-                <span v-on:click="switchToEditMode"> edit</span>
+                <div>
+                    <label>Time left:</label>
+                    <span :class="{ 'time-left': true, 'over-time': this.display < 0 }">{{display}} minutes</span>
+                </div>
+                <div class="controls">
+                    <span v-on:click="reset">reset</span><span> / </span>
+                    <span v-on:click="pauseStart">{{ running ? 'pause' : 'resume' }}</span>
+                    &nbsp; &nbsp; &nbsp;
+                    <span v-on:click="switchToEditMode"> edit</span>
+                </div>
             </template>
             <template v-else-if="editMode">
                 <label>Enter minutes: </label>
@@ -133,7 +145,7 @@
                 if (!this.timer.lastUpdate) { this.timer.lastUpdate = this.time; }
                 if (this.timer.running) {
                     var delta = this.time - this.timer.lastUpdate;
-                    this.timer.msecs = Math.max(this.timer.msecs - delta, 0);
+                    this.timer.msecs = this.timer.msecs - delta;
                 }
                 this.timer.lastUpdate = this.time;
             }
