@@ -74,7 +74,7 @@
             <template v-if="defaultMode">
                 <div>
                     <label>Time left:</label>
-                    <span :class="{ 'time-left': true, 'over-time': this.display < 0 }">{{display}} minutes</span>
+                    <span :class="{ 'time-left': true, 'over-time': this.display < 0 }">{{display}} mins</span>
                 </div>
                 <div class="controls">
                     <span v-on:click="reset">reset</span><span> / </span>
