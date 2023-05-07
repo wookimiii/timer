@@ -73,15 +73,18 @@
         <div class="timer">
             <template v-if="defaultMode">
                 <div>
-                    <label>Time left:</label>
-                    <span :class="{ 'time-left': true, 'over-time': this.display < 0 }">{{display}} mins</span>
+                    <label>Timer:</label>
+                    <span :class="{ 'time-left': true, 'over-time': this.display > 59 }">{{display}}</span>
+                    min
                 </div>
+                <!--
                 <div class="controls">
                     <span v-on:click="reset">reset</span><span> / </span>
                     <span v-on:click="pauseStart">{{ running ? 'pause' : 'resume' }}</span>
                     &nbsp; &nbsp; &nbsp;
                     <span v-on:click="switchToEditMode"> edit</span>
                 </div>
+                -->
             </template>
             <template v-else-if="editMode">
                 <label>Enter minutes: </label>
@@ -129,10 +132,10 @@
     var DATA = {
         time: new Date(),
         timer: {
-            msecs: 1000 * 60 * 60,
+            msecs: 0, // start at zero,
             lastUpdate: null,
             running: true,
-            initial: 1000 * 60 * 60
+            initial: 0 // start at zero
         }
     };
 
@@ -145,7 +148,7 @@
                 if (!this.timer.lastUpdate) { this.timer.lastUpdate = this.time; }
                 if (this.timer.running) {
                     var delta = this.time - this.timer.lastUpdate;
-                    this.timer.msecs = this.timer.msecs - delta;
+                    this.timer.msecs = this.timer.msecs + delta;
                 }
                 this.timer.lastUpdate = this.time;
             }
